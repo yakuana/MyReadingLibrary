@@ -8,12 +8,18 @@ export default function BookDetailScreen({ navigation, route }) {
   const { book } = route.params;
   const { isOwner } = useAuth();
 
-  // Format the ISO date string (e.g. "2024-11-15") into something readable
-  const formattedDate = new Date(book.dateRead).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const isReading = book.status === 'reading';
+
+  function formatDate(isoDate) {
+    if (!isoDate) return '—';
+    const [year, month, day] = isoDate.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric',
+    });
+  }
+
+  const dateLabel = isReading ? 'Started' : 'Date Read';
+  const dateValue = isReading ? formatDate(book.dateStarted) : formatDate(book.dateRead);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -42,17 +48,19 @@ export default function BookDetailScreen({ navigation, route }) {
         <Text style={styles.title}>{book.title}</Text>
         <Text style={styles.author}>by {book.author}</Text>
 
-        {/* Rating */}
-        <View style={styles.ratingRow}>
-          <StarRating rating={book.rating} size={24} />
-          <Text style={styles.ratingLabel}>{book.rating} / 5</Text>
-        </View>
+        {/* Rating — only for finished books */}
+        {!isReading && (
+          <View style={styles.ratingRow}>
+            <StarRating rating={book.rating} size={24} />
+            <Text style={styles.ratingLabel}>{book.rating} / 5</Text>
+          </View>
+        )}
 
         {/* Metadata grid */}
         <View style={styles.metaGrid}>
           <MetaItem label="Genre" value={book.genre} />
-          <MetaItem label="Pages" value={`${book.pageCount}`} />
-          <MetaItem label="Date Read" value={formattedDate} />
+          {book.pageCount ? <MetaItem label="Pages" value={`${book.pageCount}`} /> : null}
+          <MetaItem label={dateLabel} value={dateValue} />
           <MetaItem label="Favourite" value={book.favorite ? 'Yes ♥' : 'No'} isLast />
         </View>
 

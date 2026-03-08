@@ -8,6 +8,7 @@ import BookListScreen from './src/screens/BookListScreen';
 import BookDetailScreen from './src/screens/BookDetailScreen';
 import SignInScreen from './src/screens/SignInScreen';
 import EditBookScreen from './src/screens/EditBookScreen';
+import AddBookScreen from './src/screens/AddBookScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,6 +28,7 @@ export default function App() {
             <Stack.Screen name="BookDetail" component={BookDetailScreen} />
             <Stack.Screen name="SignIn" component={SignInScreen} />
             <Stack.Screen name="EditBook" component={EditBookScreen} />
+            <Stack.Screen name="AddBook" component={AddBookScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </BooksProvider>

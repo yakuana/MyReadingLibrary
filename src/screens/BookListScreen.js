@@ -27,15 +27,25 @@ export default function BookListScreen({ navigation }) {
           <Text style={styles.title}>My Books</Text>
           <Text style={styles.count}>{readBooks.length} books read</Text>
         </View>
-        {isOwner ? (
-          <TouchableOpacity style={styles.ownerBadge} onPress={signOut}>
-            <Text style={styles.ownerBadgeText}>Owner  ✓</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
-            <Text style={styles.lockIcon}>🔒</Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.headerRight}>
+          {isOwner ? (
+            <>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => navigation.navigate('AddBook')}
+              >
+                <Text style={styles.addButtonText}>+</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.ownerBadge} onPress={signOut}>
+                <Text style={styles.ownerBadgeText}>Owner  ✓</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+              <Text style={styles.lockIcon}>🔒</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <FlatList
@@ -119,6 +129,25 @@ const styles = StyleSheet.create({
   },
   lockIcon: {
     fontSize: 22,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  addButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addButtonText: {
+    fontSize: 22,
+    color: '#FFF',
+    lineHeight: 26,
+    fontWeight: '400',
   },
   ownerBadge: {
     backgroundColor: colors.primary,
