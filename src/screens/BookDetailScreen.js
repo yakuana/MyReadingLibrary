@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
@@ -39,10 +39,14 @@ export default function BookDetailScreen({ navigation, route }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Cover placeholder */}
-        <View style={styles.coverPlaceholder}>
-          <Text style={styles.coverInitial}>{book.title[0]}</Text>
-        </View>
+        {/* Cover image */}
+        {book.coverImage ? (
+          <Image source={{ uri: book.coverImage }} style={styles.coverImage} />
+        ) : (
+          <View style={styles.coverPlaceholder}>
+            <Text style={styles.coverInitial}>{book.title[0]}</Text>
+          </View>
+        )}
 
         {/* Title & author */}
         <Text style={styles.title}>{book.title}</Text>
@@ -118,6 +122,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 40,
     alignItems: 'center',
+  },
+  coverImage: {
+    width: 120,
+    height: 170,
+    borderRadius: 10,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   coverPlaceholder: {
     width: 120,

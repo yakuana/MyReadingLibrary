@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { useBooks } from '../context/BooksContext';
@@ -24,7 +24,7 @@ export default function BookListScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>My Books</Text>
+          <Text style={styles.title}>My Library</Text>
           <Text style={styles.count}>{readBooks.length} books read</Text>
         </View>
         <View style={styles.headerRight}>
@@ -70,9 +70,13 @@ export default function BookListScreen({ navigation }) {
                   onPress={() => navigation.navigate('BookDetail', { book })}
                   activeOpacity={0.8}
                 >
-                  <View style={styles.currentCoverPlaceholder}>
-                    <Text style={styles.currentCoverInitial}>{book.title[0]}</Text>
-                  </View>
+                  {book.coverImage ? (
+                    <Image source={{ uri: book.coverImage }} style={styles.currentCoverImage} />
+                  ) : (
+                    <View style={styles.currentCoverPlaceholder}>
+                      <Text style={styles.currentCoverInitial}>{book.title[0]}</Text>
+                    </View>
+                  )}
                   <View style={styles.currentInfo}>
                     <Text style={styles.currentTitle} numberOfLines={2}>{book.title}</Text>
                     <Text style={styles.currentAuthor}>{book.author}</Text>
@@ -188,6 +192,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
+  },
+  currentCoverImage: {
+    width: 64,
+    height: 90,
+    borderRadius: 6,
+    marginRight: 12,
   },
   currentCoverPlaceholder: {
     width: 64,
