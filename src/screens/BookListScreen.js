@@ -5,9 +5,19 @@ import { useBooks } from '../context/BooksContext';
 import { useAuth } from '../context/AuthContext';
 import BookCard from '../components/BookCard';
 
+function formatDate(isoDate) {
+  if (!isoDate) return '';
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
 export default function BookListScreen({ navigation }) {
   const { books } = useBooks();
   const { isOwner, signOut } = useAuth();
+
+  const currentlyReading = books.filter((b) => b.status === 'reading');
+  const readBooks = books.filter((b) => b.status !== 'reading');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -15,7 +25,7 @@ export default function BookListScreen({ navigation }) {
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>My Books</Text>
-          <Text style={styles.count}>{books.length} books read</Text>
+          <Text style={styles.count}>{readBooks.length} books read</Text>
         </View>
         {isOwner ? (
           <TouchableOpacity style={styles.ownerBadge} onPress={signOut}>
@@ -28,9 +38,8 @@ export default function BookListScreen({ navigation }) {
         )}
       </View>
 
-      {/* Book list */}
       <FlatList
-        data={books}
+        data={readBooks}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <BookCard
@@ -40,12 +49,44 @@ export default function BookListScreen({ navigation }) {
         )}
         contentContainerStyle={styles.list}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListHeaderComponent={
+          currentlyReading.length > 0 ? (
+            <View style={styles.currentlyReadingSection}>
+              <Text style={styles.sectionHeading}>Currently Reading</Text>
+              {currentlyReading.map((book) => (
+                <TouchableOpacity
+                  key={book.id}
+                  style={styles.currentCard}
+                  onPress={() => navigation.navigate('BookDetail', { book })}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.currentCoverPlaceholder}>
+                    <Text style={styles.currentCoverInitial}>{book.title[0]}</Text>
+                  </View>
+                  <View style={styles.currentInfo}>
+                    <Text style={styles.currentTitle} numberOfLines={2}>{book.title}</Text>
+                    <Text style={styles.currentAuthor}>{book.author}</Text>
+                    <View style={styles.genreBadge}>
+                      <Text style={styles.genreText}>{book.genre}</Text>
+                    </View>
+                    <Text style={styles.startedDate}>Started {formatDate(book.dateStarted)}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+              {readBooks.length > 0 && (
+                <Text style={styles.sectionHeading}>Read</Text>
+              )}
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>📚</Text>
-            <Text style={styles.emptyText}>No books yet.</Text>
-            <Text style={styles.emptySubtext}>Start adding books you've read!</Text>
-          </View>
+          currentlyReading.length === 0 ? (
+            <View style={styles.empty}>
+              <Text style={styles.emptyIcon}>📚</Text>
+              <Text style={styles.emptyText}>No books yet.</Text>
+              <Text style={styles.emptySubtext}>Start adding books you've read!</Text>
+            </View>
+          ) : null
         }
       />
     </SafeAreaView>
@@ -92,6 +133,81 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingVertical: 12,
+  },
+  currentlyReadingSection: {
+    paddingBottom: 8,
+  },
+  sectionHeading: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.primary,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  currentCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.card,
+    marginHorizontal: 16,
+    marginVertical: 6,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  currentCoverPlaceholder: {
+    width: 64,
+    height: 90,
+    borderRadius: 6,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  currentCoverInitial: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  currentInfo: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 4,
+  },
+  currentTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  currentAuthor: {
+    fontSize: 14,
+    color: colors.subtext,
+  },
+  genreBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  genreText: {
+    fontSize: 11,
+    color: colors.accent,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  startedDate: {
+    fontSize: 12,
+    color: colors.subtext,
+    fontStyle: 'italic',
   },
   separator: {
     height: 4,
