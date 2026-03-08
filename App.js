@@ -10,6 +10,7 @@ import SignInScreen from './src/screens/SignInScreen';
 import EditBookScreen from './src/screens/EditBookScreen';
 import AddBookScreen from './src/screens/AddBookScreen';
 import AnalyticsScreen from './src/screens/AnalyticsScreen';
+import BookshelfScreen from './src/screens/BookshelfScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,12 +26,13 @@ export default function App() {
               contentStyle: { backgroundColor: colors.background },
             }}
           >
-            <Stack.Screen name="BookList" component={BookListScreen} />
+            <Stack.Screen name="BookList" component={BookListScreen} options={{ title: 'My Library' }} />
             <Stack.Screen name="BookDetail" component={BookDetailScreen} />
             <Stack.Screen name="SignIn" component={SignInScreen} />
             <Stack.Screen name="EditBook" component={EditBookScreen} />
             <Stack.Screen name="AddBook" component={AddBookScreen} />
             <Stack.Screen name="Analytics" component={AnalyticsScreen} />
+            <Stack.Screen name="Bookshelf" component={BookshelfScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </BooksProvider>
