@@ -1,18 +1,31 @@
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { useBooks } from '../context/BooksContext';
+import { useAuth } from '../context/AuthContext';
 import BookCard from '../components/BookCard';
 
 export default function BookListScreen({ navigation }) {
   const { books } = useBooks();
+  const { isOwner, signOut } = useAuth();
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>My Books</Text>
-        <Text style={styles.count}>{books.length} books read</Text>
+        <View>
+          <Text style={styles.title}>My Books</Text>
+          <Text style={styles.count}>{books.length} books read</Text>
+        </View>
+        {isOwner ? (
+          <TouchableOpacity style={styles.ownerBadge} onPress={signOut}>
+            <Text style={styles.ownerBadgeText}>Owner  ✓</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+            <Text style={styles.lockIcon}>🔒</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Book list */}
@@ -45,6 +58,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
@@ -59,6 +75,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.subtext,
     marginTop: 2,
+  },
+  lockIcon: {
+    fontSize: 22,
+  },
+  ownerBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  ownerBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFF',
   },
   list: {
     paddingVertical: 12,

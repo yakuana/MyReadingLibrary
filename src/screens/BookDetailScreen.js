@@ -1,11 +1,12 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
+import { useAuth } from '../context/AuthContext';
 import StarRating from '../components/StarRating';
 
 export default function BookDetailScreen({ navigation, route }) {
-  // Pull the book object passed from BookListScreen via navigation.navigate()
   const { book } = route.params;
+  const { isOwner } = useAuth();
 
   // Format the ISO date string (e.g. "2024-11-15") into something readable
   const formattedDate = new Date(book.dateRead).toLocaleDateString('en-US', {
@@ -16,10 +17,20 @@ export default function BookDetailScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Back button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>← Back</Text>
-      </TouchableOpacity>
+      {/* Top bar: back + optional edit */}
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backText}>← Back</Text>
+        </TouchableOpacity>
+        {isOwner && (
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => navigation.navigate('EditBook', { book })}
+          >
+            <Text style={styles.editText}>Edit</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Cover placeholder */}
@@ -57,8 +68,6 @@ export default function BookDetailScreen({ navigation, route }) {
   );
 }
 
-// Small helper component for the metadata grid rows.
-// isLast removes the bottom border so it doesn't clash with the card edge.
 function MetaItem({ label, value, isLast }) {
   return (
     <View style={[styles.metaItem, isLast && styles.metaItemLast]}>
@@ -73,14 +82,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  backButton: {
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
+  backButton: {},
   backText: {
     fontSize: 16,
     color: colors.accent,
     fontWeight: '600',
+  },
+  editButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  editText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFF',
   },
   content: {
     paddingHorizontal: 24,
@@ -95,7 +119,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
-    // Shadow
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
