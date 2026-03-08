@@ -23,11 +23,17 @@ export default function BookListScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
+        <TouchableOpacity onPress={() => navigation.navigate('Analytics')}>
           <Text style={styles.title}>My Library</Text>
           <Text style={styles.count}>{readBooks.length} books read</Text>
-        </View>
+        </TouchableOpacity>
         <View style={styles.headerRight}>
+          <TouchableOpacity
+            style={styles.analyticsButton}
+            onPress={() => navigation.navigate('Analytics')}
+          >
+            <Text style={styles.analyticsButtonText}>📊</Text>
+          </TouchableOpacity>
           {isOwner ? (
             <>
               <TouchableOpacity
@@ -138,6 +144,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  analyticsButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  analyticsButtonText: {
+    fontSize: 18,
   },
   addButton: {
     width: 34,
