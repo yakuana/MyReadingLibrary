@@ -46,7 +46,7 @@ export default function BookListScreen({ navigation }) {
                 style={styles.addButton}
                 onPress={() => navigation.navigate('AddBook')}
               >
-                <Text style={styles.addButtonText}>+</Text>
+                <Text style={styles.addButtonText}>Add A Book +</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.ownerBadge} onPress={signOut}>
                 <Text style={styles.ownerBadgeText}>Owner  ✓</Text>
@@ -176,15 +176,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   addButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
     backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   addButtonText: {
-    fontSize: 22,
+    fontSize: 13,
+    fontWeight: '700',
     color: '#FFF',
     lineHeight: 26,
     fontWeight: '400',
