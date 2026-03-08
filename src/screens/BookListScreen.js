@@ -24,15 +24,21 @@ export default function BookListScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.navigate('Analytics')}>
-          <Text style={styles.title}>My Library</Text>
+          <Text style={styles.title}>Library</Text>
           <Text style={styles.count}>{readBooks.length} books read</Text>
         </TouchableOpacity>
         <View style={styles.headerRight}>
           <TouchableOpacity
-            style={styles.analyticsButton}
+            style={styles.shelfButton}
+            onPress={() => navigation.navigate('Bookshelf')}
+          >
+            <Text style={styles.shelfButtonText}>Bookshelf</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.shelfButton}
             onPress={() => navigation.navigate('Analytics')}
           >
-            <Text style={styles.analyticsButtonText}>📊</Text>
+            <Text style={styles.shelfButtonText}>Analytics</Text>
           </TouchableOpacity>
           {isOwner ? (
             <>
@@ -144,6 +150,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  shelfButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  shelfButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFF',
   },
   analyticsButton: {
     width: 34,
