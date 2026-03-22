@@ -5,168 +5,93 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBooks } from '../context/BooksContext';
 
-const SHELF_H_PADDING = 16;
-const BOOK_GAP = 3;
-const BOOKS_PER_SHELF = 5;
-const MIN_SHELVES = 5;
-
-// Rich jewel-tone and earth-tone spine colors
 const SPINE_COLORS = [
-  '#8B2635', // crimson
-  '#1B3D72', // navy
-  '#1C5631', // forest green
-  '#7A5C08', // dark olive
-  '#5C2200', // burnt sienna
-  '#4A2A5C', // deep purple
-  '#1A4A6A', // dark teal
-  '#6A3C12', // warm brown
-  '#2A2A2A', // near black
-  '#3A1A50', // plum
-  '#A02020', // deep red
-  '#1E5C8A', // slate blue
-  '#0E6E5C', // dark teal green
-  '#8A6010', // amber
-  '#7A2C00', // rust
-  '#503070', // violet
-  '#2E5018', // dark olive green
-  '#6B1A3A', // burgundy
+  '#8B2635', '#1B3D72', '#1C5631', '#7A5C08', '#5C2200',
+  '#4A2A5C', '#1A4A6A', '#6A3C12', '#2A2A2A', '#3A1A50',
+  '#A02020', '#1E5C8A', '#0E6E5C', '#8A6010', '#7A2C00',
+  '#503070', '#2E5018', '#6B1A3A',
 ];
 
-// Varying heights (px) — tall art books, slim novellas, average novels
 const HEIGHT_VARIANTS = [148, 128, 160, 118, 143, 133, 156, 122, 140, 150, 124, 158, 136, 144, 120, 152];
-
-// Varying widths (px) — thick tomes, slim books
-const WIDTH_VARIANTS = [42, 36, 50, 38, 48, 40, 54, 34, 44, 46, 37, 52, 39, 47, 55, 33, 43, 49];
-
+const WIDTH_VARIANTS  = [42, 36, 50, 38, 48, 40, 54, 34, 44, 46, 37, 52, 39, 47, 55, 33, 43, 49];
 const MAX_BOOK_HEIGHT = Math.max(...HEIGHT_VARIANTS);
+const BOOK_GAP = 4;
 
 function getBookProps(index) {
   return {
     bookHeight: HEIGHT_VARIANTS[index % HEIGHT_VARIANTS.length],
-    bookWidth: WIDTH_VARIANTS[index % WIDTH_VARIANTS.length],
+    bookWidth:  WIDTH_VARIANTS[index % WIDTH_VARIANTS.length],
     spineColor: SPINE_COLORS[index % SPINE_COLORS.length],
   };
 }
 
 function BookSpine({ book, globalIndex, onPress }) {
   const { bookHeight, bookWidth, spineColor } = getBookProps(globalIndex);
-
-  // Inner rotated text container dimensions
-  const innerW = bookHeight - 24;
-  const innerH = bookWidth - 10;
-  const innerLeft = (bookWidth - innerW) / 2;
-  const innerTop = (bookHeight - innerH) / 2;
+  const innerW   = bookHeight - 20;
+  const innerH   = bookWidth  - 8;
+  const innerLeft = (bookWidth  - innerW) / 2;
+  const innerTop  = (bookHeight - innerH) / 2;
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.72} style={{ alignSelf: 'flex-end' }}>
-      <View
-        style={{
-          width: bookWidth,
-          height: bookHeight,
-          backgroundColor: spineColor,
-          borderTopLeftRadius: 2,
-          borderTopRightRadius: 2,
-          overflow: 'hidden',
-          shadowColor: '#000',
-          shadowOffset: { width: 3, height: 3 },
-          shadowOpacity: 0.5,
-          shadowRadius: 4,
-          elevation: 6,
-        }}
-      >
-        {/* Left edge highlight — simulates rounded spine */}
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: 6,
-            height: bookHeight,
-            backgroundColor: 'rgba(255,255,255,0.2)',
-          }}
-        />
-
-        {/* Right edge shadow */}
-        <View
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            width: 4,
-            height: bookHeight,
-            backgroundColor: 'rgba(0,0,0,0.3)',
-          }}
-        />
-
+      <View style={{
+        width: bookWidth,
+        height: bookHeight,
+        backgroundColor: spineColor,
+        borderTopLeftRadius: 3,
+        borderTopRightRadius: 3,
+        overflow: 'hidden',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 4, height: 4 },
+        shadowOpacity: 0.65,
+        shadowRadius: 5,
+      }}>
+        {/* Left highlight — rounded spine illusion */}
+        <View style={{
+          position: 'absolute', left: 0, top: 0, width: 5, height: bookHeight,
+          backgroundColor: 'rgba(255,255,255,0.22)',
+        }} />
+        {/* Right shadow */}
+        <View style={{
+          position: 'absolute', right: 0, top: 0, width: 5, height: bookHeight,
+          backgroundColor: 'rgba(0,0,0,0.38)',
+        }} />
         {/* Top decorative band */}
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 10,
-            backgroundColor: 'rgba(255,255,255,0.12)',
-            borderBottomWidth: 1,
-            borderBottomColor: 'rgba(0,0,0,0.15)',
-          }}
-        />
-
-        {/* Bottom decorative band */}
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 10,
-            backgroundColor: 'rgba(0,0,0,0.22)',
-          }}
-        />
-
-        {/* Rotated title + author, reading bottom-to-top */}
-        <View
-          style={{
-            position: 'absolute',
-            width: innerW,
-            height: innerH,
-            left: innerLeft,
-            top: innerTop,
-            transform: [{ rotate: '-90deg' }],
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: 4,
-          }}
-        >
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={{
-              fontSize: 10,
-              fontWeight: '700',
-              color: 'rgba(255,255,255,0.92)',
-              letterSpacing: 0.4,
-              textAlign: 'center',
-            }}
-          >
-            {book.title}
-          </Text>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={{
-              fontSize: 8,
-              color: 'rgba(255,255,255,0.6)',
-              marginTop: 2,
-              textAlign: 'center',
-            }}
-          >
-            {book.author}
-          </Text>
+        <View style={{
+          position: 'absolute', top: 0, left: 5, right: 5, height: 8,
+          backgroundColor: 'rgba(255,255,255,0.1)',
+          borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.2)',
+        }} />
+        {/* Bottom band */}
+        <View style={{
+          position: 'absolute', bottom: 0, left: 5, right: 5, height: 8,
+          backgroundColor: 'rgba(0,0,0,0.28)',
+        }} />
+        {/* Rotated title + author */}
+        <View style={{
+          position: 'absolute',
+          width: innerW, height: innerH,
+          left: innerLeft, top: innerTop,
+          transform: [{ rotate: '-90deg' }],
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: 4,
+        }}>
+          <Text numberOfLines={1} ellipsizeMode="tail" style={{
+            fontSize: 9, fontWeight: '700',
+            color: 'rgba(255,255,255,0.95)',
+            letterSpacing: 0.5, textAlign: 'center',
+          }}>{book.title}</Text>
+          <Text numberOfLines={1} ellipsizeMode="tail" style={{
+            fontSize: 7.5, color: 'rgba(255,255,255,0.6)',
+            marginTop: 2, textAlign: 'center',
+          }}>{book.author}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -176,22 +101,23 @@ function BookSpine({ book, globalIndex, onPress }) {
 function Shelf({ shelfBooks, shelfIndex, onBookPress }) {
   return (
     <View style={styles.shelfWrapper}>
-      {/* Books sit on shelf, aligned to bottom */}
+      {/* Books row — bottom-aligned so varying heights sit on the plank */}
       <View style={[styles.booksRow, { minHeight: MAX_BOOK_HEIGHT }]}>
         {shelfBooks.map((book, i) =>
           book ? (
             <BookSpine
               key={book.id}
               book={book}
-              globalIndex={shelfIndex * BOOKS_PER_SHELF + i}
+              globalIndex={shelfIndex * 20 + i}
               onPress={() => onBookPress(book)}
             />
           ) : null
         )}
       </View>
 
-      {/* Wooden shelf plank with depth layers */}
+      {/* Layered wooden shelf plank */}
       <View style={styles.shelfPlank}>
+        <View style={styles.plankHighlight} />
         <View style={styles.plankFace} />
         <View style={styles.plankEdge} />
         <View style={styles.plankShadow} />
@@ -202,39 +128,52 @@ function Shelf({ shelfBooks, shelfIndex, onBookPress }) {
 
 export default function BookshelfScreen({ navigation }) {
   const { books } = useBooks();
+  const { width }  = useWindowDimensions();
+
   const readBooks = useMemo(() => books.filter((b) => b.status === 'read'), [books]);
+
+  // Adaptive: fit as many books as the screen allows
+  const SHELF_H_PADDING = 32;
+  const avgBookWidth    = 43;
+  const booksPerShelf   = Math.max(3, Math.floor((width - SHELF_H_PADDING) / (avgBookWidth + BOOK_GAP)));
 
   const shelves = useMemo(() => {
     const result = [];
-    for (let i = 0; i < readBooks.length; i += BOOKS_PER_SHELF) {
-      result.push(readBooks.slice(i, i + BOOKS_PER_SHELF));
+    for (let i = 0; i < readBooks.length; i += booksPerShelf) {
+      result.push(readBooks.slice(i, i + booksPerShelf));
     }
-    while (result.length < MIN_SHELVES) {
-      result.push([]);
-    }
+    const MIN_SHELVES = 4;
+    while (result.length < MIN_SHELVES) result.push([]);
     return result;
-  }, [readBooks]);
+  }, [readBooks, booksPerShelf]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Dark walnut header */}
+      {/* Header — warm gold on dark mahogany */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backArrow}>←</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>My Bookshelf</Text>
-          <Text style={styles.headerSubtitle}>{readBooks.length} books read</Text>
+          <Text style={styles.headerTitle}>MY LIBRARY</Text>
+          {readBooks.length > 0 && (
+            <Text style={styles.headerSubtitle}>
+              {readBooks.length} {readBooks.length === 1 ? 'book' : 'books'}
+            </Text>
+          )}
         </View>
-        <View style={{ width: 40 }} />
+        <View style={{ width: 44 }} />
       </View>
+
+      {/* Subtle top-of-wall lighting strip */}
+      <View style={styles.ambientLight} />
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: SHELF_H_PADDING / 2 }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ height: 28 }} />
+        <View style={{ height: 20 }} />
         {shelves.map((shelfBooks, index) => (
           <Shelf
             key={index}
@@ -243,106 +182,119 @@ export default function BookshelfScreen({ navigation }) {
             onBookPress={(book) => navigation.navigate('BookDetail', { book })}
           />
         ))}
-        <View style={{ height: 48 }} />
+
+        {readBooks.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>📚</Text>
+            <Text style={styles.emptyText}>Your shelves are empty.</Text>
+            <Text style={styles.emptySubtext}>Books you've read will appear here.</Text>
+          </View>
+        )}
+        <View style={{ height: 60 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  // Warm parchment library wall
   container: {
     flex: 1,
-    backgroundColor: '#C9B99A',
+    backgroundColor: '#1A0E06',
   },
 
-  // Dark walnut header bar
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: '#2C1A0E',
-    borderBottomWidth: 3,
-    borderBottomColor: '#1A0E06',
+    backgroundColor: '#0D0700',
+    borderBottomWidth: 2,
+    borderBottomColor: '#3A1A0A',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.6,
     shadowRadius: 6,
     elevation: 8,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 44, height: 44,
+    alignItems: 'center', justifyContent: 'center',
   },
   backArrow: {
-    fontSize: 26,
-    color: '#D4A86A',
-    fontWeight: '300',
+    fontSize: 24, color: '#C8923A', fontWeight: '300',
   },
   headerCenter: {
-    flex: 1,
-    alignItems: 'center',
+    flex: 1, alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F0DDB0',
-    letterSpacing: 0.8,
+    fontSize: 20, fontWeight: '800',
+    color: '#E8C070',
+    letterSpacing: 3,
   },
   headerSubtitle: {
-    fontSize: 12,
-    color: '#A08860',
-    marginTop: 2,
-    letterSpacing: 0.3,
+    fontSize: 11, color: '#7A5A30',
+    marginTop: 2, letterSpacing: 1,
   },
 
-  scrollContent: {
-    paddingHorizontal: SHELF_H_PADDING,
+  // Thin warm-light strip at top of the "room"
+  ambientLight: {
+    height: 3,
+    backgroundColor: '#4A2E10',
+    opacity: 0.6,
   },
 
-  // Each shelf unit (books + plank)
+  scrollContent: {},
+
   shelfWrapper: {
-    marginBottom: 36,
+    marginBottom: 30,
   },
-
-  // Row of book spines, bottom-aligned
   booksRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: BOOK_GAP,
   },
 
-  // Three-layer wooden shelf plank
+  // Three-layer wooden plank
   shelfPlank: {
     width: '100%',
     marginTop: 1,
   },
+  plankHighlight: {
+    height: 2,
+    backgroundColor: '#D4903A',
+  },
   plankFace: {
-    height: 14,
-    backgroundColor: '#9A6432',
-    // Subtle horizontal grain lines via border
-    borderTopWidth: 1,
-    borderTopColor: '#B87840',
-    borderBottomWidth: 1,
-    borderBottomColor: '#7A4A20',
+    height: 16,
+    backgroundColor: '#8A4E20',
+    borderTopWidth: 1, borderTopColor: '#B07030',
+    borderBottomWidth: 1, borderBottomColor: '#5A2E08',
   },
   plankEdge: {
     height: 8,
-    backgroundColor: '#6A3E18',
+    backgroundColor: '#5A2808',
   },
   plankShadow: {
-    height: 6,
-    backgroundColor: '#2E160A',
-    borderBottomLeftRadius: 3,
-    borderBottomRightRadius: 3,
-    // Drop shadow below shelf
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 6,
-    elevation: 4,
+    height: 10,
+    backgroundColor: '#0D0700',
+    opacity: 0.85,
+  },
+
+  emptyState: {
+    alignItems: 'center',
+    marginTop: 80,
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+    opacity: 0.5,
+  },
+  emptyText: {
+    fontSize: 18, color: '#7A5A30',
+    fontWeight: '600', textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 13, color: '#4A3A20',
+    marginTop: 8, textAlign: 'center', lineHeight: 20,
   },
 });

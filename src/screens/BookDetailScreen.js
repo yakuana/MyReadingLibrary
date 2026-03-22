@@ -1,90 +1,126 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
 import StarRating from '../components/StarRating';
+
+// Consistent spine-color for the cover placeholder, seeded by book id
+const SPINE_COLORS = [
+  '#8B2635', '#1B3D72', '#1C5631', '#7A5C08',
+  '#4A2A5C', '#1A4A6A', '#6A3C12', '#7A2C00',
+];
+function placeholderColor(id = '') {
+  const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return SPINE_COLORS[hash % SPINE_COLORS.length];
+}
+
+function formatDate(isoDate) {
+  if (!isoDate) return '—';
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric',
+  });
+}
 
 export default function BookDetailScreen({ navigation, route }) {
   const { book } = route.params;
   const { isOwner } = useAuth();
-
   const isReading = book.status === 'reading';
 
-  function formatDate(isoDate) {
-    if (!isoDate) return '—';
-    const [year, month, day] = isoDate.split('-').map(Number);
-    return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'long', day: 'numeric',
-    });
-  }
-
-  const dateLabel = isReading ? 'Started' : 'Date Read';
-  const dateValue = isReading ? formatDate(book.dateStarted) : formatDate(book.dateRead);
-
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Top bar: back + optional edit */}
-      <View style={styles.topBar}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-        {isOwner && (
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => navigation.navigate('EditBook', { book })}
-          >
-            <Text style={styles.editText}>Edit</Text>
+    <View style={styles.container}>
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+
+        {/* Top bar */}
+        <View style={styles.topBar}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.backText}>← Back to Shelf</Text>
           </TouchableOpacity>
-        )}
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Cover image */}
-        {book.coverImage ? (
-          <Image source={{ uri: book.coverImage }} style={styles.coverImage} />
-        ) : (
-          <View style={styles.coverPlaceholder}>
-            <Text style={styles.coverInitial}>{book.title[0]}</Text>
-          </View>
-        )}
-
-        {/* Title & author */}
-        <Text style={styles.title}>{book.title}</Text>
-        <Text style={styles.author}>by {book.author}</Text>
-
-        {/* Rating — only for finished books */}
-        {!isReading && (
-          <View style={styles.ratingRow}>
-            <StarRating rating={book.rating} size={24} />
-            <Text style={styles.ratingLabel}>{book.rating} / 5</Text>
-          </View>
-        )}
-
-        {/* Metadata grid */}
-        <View style={styles.metaGrid}>
-          <MetaItem label="Genre" value={book.genre} />
-          {book.pageCount ? <MetaItem label="Pages" value={`${book.pageCount}`} /> : null}
-          <MetaItem label={dateLabel} value={dateValue} />
-          <MetaItem label="Favourite" value={book.favorite ? 'Yes ♥' : 'No'} isLast />
+          {isOwner && (
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => navigation.navigate('EditBook', { book })}
+            >
+              <Text style={styles.editText}>Edit</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* Notes */}
-        {book.notes ? (
-          <View style={styles.notesCard}>
-            <Text style={styles.notesLabel}>My Notes</Text>
-            <Text style={styles.notesText}>{book.notes}</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Cover image floats above the card */}
+          <View style={styles.coverSection}>
+            {book.coverImage ? (
+              <Image source={{ uri: book.coverImage }} style={styles.coverImage} />
+            ) : (
+              <View style={[styles.coverPlaceholder, { backgroundColor: placeholderColor(book.id) }]}>
+                <Text style={styles.coverInitial}>{book.title[0]}</Text>
+              </View>
+            )}
+            <Text style={styles.title}>{book.title}</Text>
+            <Text style={styles.author}>by {book.author}</Text>
+
+            {!isReading && book.rating != null && (
+              <View style={styles.ratingRow}>
+                <StarRating rating={book.rating} size={22} />
+              </View>
+            )}
           </View>
-        ) : null}
-      </ScrollView>
-    </SafeAreaView>
+
+          {/* Review card — parchment on dark library wall */}
+          <View style={styles.reviewCard}>
+
+            {/* Meta chips */}
+            <View style={styles.metaRow}>
+              {book.genre ? <MetaChip label={book.genre} /> : null}
+              {book.pageCount ? <MetaChip label={`${book.pageCount} pages`} /> : null}
+              {book.favorite ? <MetaChip label="♥ Favourite" accent /> : null}
+              {isReading ? <MetaChip label="Currently reading" reading /> : null}
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Date line */}
+            <Text style={styles.dateLine}>
+              {isReading
+                ? `Started reading: ${formatDate(book.dateStarted)}`
+                : `Finished: ${formatDate(book.dateRead)}`}
+            </Text>
+
+            {/* Review / notes */}
+            {book.notes ? (
+              <View style={styles.reviewSection}>
+                <Text style={styles.reviewLabel}>My Review</Text>
+                <Text style={styles.reviewText}>{book.notes}</Text>
+              </View>
+            ) : (
+              <View style={styles.noReviewSection}>
+                <Text style={styles.noReviewText}>
+                  {isOwner ? 'Tap Edit to add your review.' : 'No review written yet.'}
+                </Text>
+              </View>
+            )}
+
+          </View>
+
+          <View style={{ height: 50 }} />
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
-function MetaItem({ label, value, isLast }) {
+function MetaChip({ label, accent, reading }) {
+  let bg    = '#EAD8B8';
+  let border = '#D4BC90';
+  let text  = '#5A3A18';
+  if (accent) { bg = '#8B2635'; border = '#6B1825'; text = '#F5EDD8'; }
+  if (reading) { bg = '#1A4A6A'; border = '#0E3050'; text = '#C8E0F0'; }
+
   return (
-    <View style={[styles.metaItem, isLast && styles.metaItemLast]}>
-      <Text style={styles.metaLabel}>{label}</Text>
-      <Text style={styles.metaValue}>{value}</Text>
+    <View style={[styles.chip, { backgroundColor: bg, borderColor: border }]}>
+      <Text style={[styles.chipText, { color: text }]}>{label}</Text>
     </View>
   );
 }
@@ -92,137 +128,149 @@ function MetaItem({ label, value, isLast }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#1A0E06',
   },
+
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#3A1A0A',
   },
   backButton: {},
   backText: {
-    fontSize: 16,
-    color: colors.accent,
-    fontWeight: '600',
+    fontSize: 15, color: '#C8923A', fontWeight: '600',
   },
   editButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#C8923A',
     borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 16, paddingVertical: 6,
   },
   editText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFF',
+    fontSize: 14, fontWeight: '700', color: '#1A0E06',
   },
-  content: {
-    paddingHorizontal: 24,
+
+  scrollContent: {
+    paddingHorizontal: 20,
     paddingBottom: 40,
+  },
+
+  // Cover + title area — sits above the card on the dark "wall"
+  coverSection: {
     alignItems: 'center',
+    paddingTop: 32,
+    paddingBottom: 28,
   },
   coverImage: {
-    width: 120,
-    height: 170,
-    borderRadius: 10,
+    width: 130, height: 190,
+    borderRadius: 6,
     marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.7,
+    shadowRadius: 14,
+    elevation: 12,
   },
   coverPlaceholder: {
-    width: 120,
-    height: 170,
-    borderRadius: 10,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 130, height: 190,
+    borderRadius: 6,
+    alignItems: 'center', justifyContent: 'center',
     marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.7,
+    shadowRadius: 14,
+    elevation: 12,
   },
   coverInitial: {
-    fontSize: 56,
-    fontWeight: 'bold',
-    color: '#FFF',
+    fontSize: 64, fontWeight: 'bold', color: 'rgba(255,255,255,0.88)',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.text,
+    fontSize: 22, fontWeight: '800',
+    color: '#E8C070',
     textAlign: 'center',
+    letterSpacing: 0.3,
     marginBottom: 6,
+    paddingHorizontal: 10,
   },
   author: {
-    fontSize: 16,
-    color: colors.subtext,
-    marginBottom: 16,
+    fontSize: 15, color: '#9A7848',
+    fontStyle: 'italic',
+    marginBottom: 14,
   },
   ratingRow: {
+    marginTop: 2,
+  },
+
+  // Parchment review card
+  reviewCard: {
+    backgroundColor: '#F5EDD8',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+
+  metaRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 16,
   },
-  ratingLabel: {
-    fontSize: 14,
-    color: colors.subtext,
-  },
-  metaGrid: {
-    width: '100%',
-    borderRadius: 12,
-    backgroundColor: colors.card,
+  chip: {
+    borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-    marginBottom: 20,
   },
-  metaItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  chipText: {
+    fontSize: 12, fontWeight: '600',
   },
-  metaItemLast: {
-    borderBottomWidth: 0,
+
+  divider: {
+    height: 1,
+    backgroundColor: '#D4BC90',
+    marginBottom: 14,
   },
-  metaLabel: {
-    fontSize: 14,
-    color: colors.subtext,
+
+  dateLine: {
+    fontSize: 13, color: '#8A6A40',
+    fontStyle: 'italic',
+    marginBottom: 18,
   },
-  metaValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  notesCard: {
-    width: '100%',
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
+
+  // Review section — slight inset paper feel
+  reviewSection: {
+    backgroundColor: '#FBF4E4',
+    borderRadius: 10,
     padding: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: '#C8923A',
   },
-  notesLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.subtext,
+  reviewLabel: {
+    fontSize: 10, fontWeight: '800',
+    color: '#9A7040',
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 8,
+    letterSpacing: 1.5,
+    marginBottom: 10,
   },
-  notesText: {
-    fontSize: 15,
-    color: colors.text,
-    lineHeight: 22,
+  reviewText: {
+    fontSize: 15, color: '#3A2810',
+    lineHeight: 25,
+    fontStyle: 'italic',
+  },
+
+  noReviewSection: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  noReviewText: {
+    fontSize: 14, color: '#A09060',
+    fontStyle: 'italic',
   },
 });
