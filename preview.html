@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Reading Library — Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #111;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+    gap: 60px;
+    min-height: 100vh;
+  }
+
+  h2 {
+    color: #666;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: -40px;
+  }
+
+  /* ── Phone shell ── */
+  .phone {
+    width: 390px;
+    border-radius: 50px;
+    background: #000;
+    box-shadow:
+      0 0 0 2px #333,
+      0 0 0 4px #1a1a1a,
+      0 40px 80px rgba(0,0,0,0.8);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 34px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 10;
+  }
+
+  .screen {
+    width: 100%;
+    background: #1A0E06;
+    overflow: hidden;
+  }
+
+  /* ── SCREEN 1: Bookshelf ── */
+  .status-bar {
+    height: 54px;
+    background: #0D0700;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 6px;
+    padding-left: 20px;
+    padding-right: 20px;
+    justify-content: space-between;
+  }
+  .status-bar span { color: #7A5A30; font-size: 12px; font-weight: 600; }
+
+  .shelf-header {
+    background: #0D0700;
+    border-bottom: 2px solid #3A1A0A;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.6);
+  }
+  .back-arrow { color: #C8923A; font-size: 22px; width: 44px; }
+  .shelf-header-center { text-align: center; flex: 1; }
+  .shelf-title {
+    color: #E8C070;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .shelf-subtitle { color: #7A5A30; font-size: 11px; letter-spacing: 1px; margin-top: 2px; }
+
+  .ambient-light { height: 3px; background: #4A2E10; opacity: 0.6; }
+
+  .shelf-area {
+    background: #1A0E06;
+    padding: 20px 16px 0;
+  }
+
+  .shelf-row { margin-bottom: 30px; }
+  .books-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    min-height: 162px;
+  }
+
+  .book-spine {
+    border-radius: 3px 3px 0 0;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.65);
+    flex-shrink: 0;
+  }
+  .book-spine:hover {
+    transform: translateY(-6px);
+    filter: brightness(1.15);
+    z-index: 2;
+  }
+
+  /* Left highlight */
+  .book-spine::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 5px; height: 100%;
+    background: rgba(255,255,255,0.22);
+    z-index: 1;
+  }
+  /* Right shadow */
+  .book-spine::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0;
+    width: 5px; height: 100%;
+    background: rgba(0,0,0,0.38);
+    z-index: 1;
+  }
+
+  .spine-top-band {
+    position: absolute; top: 0; left: 5px; right: 5px; height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  .spine-bot-band {
+    position: absolute; bottom: 0; left: 5px; right: 5px; height: 8px;
+    background: rgba(0,0,0,0.28);
+    z-index: 1;
+  }
+
+  .spine-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .spine-title {
+    color: rgba(255,255,255,0.95);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+  .spine-author {
+    color: rgba(255,255,255,0.6);
+    font-size: 7.5px;
+    text-align: center;
+  }
+
+  /* Wooden shelf plank */
+  .shelf-plank { width: 100%; }
+  .plank-highlight { height: 2px; background: #D4903A; }
+  .plank-face {
+    height: 16px;
+    background: #8A4E20;
+    border-top: 1px solid #B07030;
+    border-bottom: 1px solid #5A2E08;
+  }
+  .plank-edge { height: 8px; background: #5A2808; }
+  .plank-shadow { height: 10px; background: #0D0700; opacity: 0.85; }
+
+  /* ── SCREEN 2: Book Detail ── */
+  .detail-screen { background: #1A0E06; }
+  .detail-topbar {
+    background: #1A0E06;
+    border-bottom: 1px solid #3A1A0A;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .detail-back { color: #C8923A; font-size: 14px; font-weight: 600; }
+  .edit-btn {
+    background: #C8923A;
+    border-radius: 8px;
+    padding: 6px 16px;
+    color: #1A0E06;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .cover-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 20px 24px;
+  }
+  .cover-img {
+    width: 120px;
+    height: 175px;
+    border-radius: 6px;
+    object-fit: cover;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.75);
+  }
+  .cover-placeholder {
+    width: 120px;
+    height: 175px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.75);
+    font-size: 56px;
+    color: rgba(255,255,255,0.88);
+    font-weight: bold;
+  }
+  .detail-title {
+    color: #E8C070;
+    font-size: 20px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 0.3px;
+    margin-bottom: 5px;
+  }
+  .detail-author {
+    color: #9A7848;
+    font-size: 14px;
+    font-style: italic;
+    margin-bottom: 12px;
+  }
+  .stars { color: #F5A623; font-size: 18px; letter-spacing: 2px; }
+
+  /* Review card */
+  .review-card {
+    background: #F5EDD8;
+    border-radius: 16px;
+    margin: 0 16px;
+    padding: 18px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+  }
+
+  .meta-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    background: #EAD8B8;
+    border: 1px solid #D4BC90;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #5A3A18;
+  }
+  .chip.accent { background: #8B2635; border-color: #6B1825; color: #F5EDD8; }
+  .chip.reading { background: #1A4A6A; border-color: #0E3050; color: #C8E0F0; }
+
+  .card-divider { height: 1px; background: #D4BC90; margin-bottom: 12px; }
+  .date-line { font-size: 12px; color: #8A6A40; font-style: italic; margin-bottom: 16px; }
+
+  .review-box {
+    background: #FBF4E4;
+    border-radius: 10px;
+    padding: 14px;
+    border-left: 3px solid #C8923A;
+  }
+  .review-box-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: #9A7040;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .review-box-text {
+    font-size: 14px;
+    color: #3A2810;
+    line-height: 22px;
+    font-style: italic;
+  }
+
+  .bottom-space { height: 30px; background: #1A0E06; }
+
+  /* ── Toggle buttons ── */
+  .toggle-bar {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .toggle-btn {
+    background: #2A1A0A;
+    border: 1px solid #5A3A18;
+    color: #C8923A;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .toggle-btn:hover, .toggle-btn.active {
+    background: #C8923A;
+    border-color: #C8923A;
+    color: #1A0E06;
+  }
+
+  .screen-label {
+    color: #555;
+    font-size: 11px;
+    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════
+     SCREEN 1 — BOOKSHELF
+═══════════════════════════════ -->
+<div>
+  <p class="screen-label">Screen 1 — The Library</p>
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● WiFi 🔋</span>
+      </div>
+
+      <div class="shelf-header">
+        <div class="back-arrow">←</div>
+        <div class="shelf-header-center">
+          <div class="shelf-title">MY LIBRARY</div>
+          <div class="shelf-subtitle">3 books</div>
+        </div>
+        <div style="width:44px"></div>
+      </div>
+      <div class="ambient-light"></div>
+
+      <div class="shelf-area">
+
+        <!-- Shelf 1 -->
+        <div class="shelf-row">
+          <div class="books-row">
+            <div class="book-spine" style="width:43px;height:148px;background:#8B2635" onclick="showDetail(0)">
+              <div class="spine-top-band"></div><div class="spine-bot-band"></div>
+              <div class="spine-text"><span class="spine-title">Schindler's List</span><span class="spine-author">T. Keneally</span></div>
+            </div>
+            <div class="book-spine" style="width:37px;height:128px;background:#1B3D72" onclick="showDetail(1)">
+              <div class="spine-top-band"></div><div class="spine-bot-band"></div>
+              <div class="spine-text"><span class="spine-title">Tap In</span><span class="spine-author">Mel Robbins</span></div>
+            </div>
+            <div class="book-spine" style="width:50px;height:160px;background:#1C5631" onclick="showDetail(2)">
+              <div class="spine-top-band"></div><div class="spine-bot-band"></div>
+              <div class="spine-text"><span class="spine-title">Razorblade Tears</span><span class="spine-author">S.A. Cosby</span></div>
+            </div>
+            <div class="book-spine" style="width:38px;height:118px;background:#7A5C08">
+              <div class="spine-top-band"></div><div class="spine-bot-band"></div>
+              <div class="spine-text"><span class="spine-title">Empty</span></div>
+            </div>
+            <div class="book-spine" style="width:48px;height:143px;background:#5C2200">
+              <div class="spine-top-band"></div><div class="spine-bot-band"></div>
+            </div>
+            <div class="book-spine" style="width:40px;height:133px;background:#4A2A5C">
+              <div class="spine-top-band"></div><div class="spine-bot-band"></div>
+            </div>
+            <div class="book-spine" style="width:54px;height:156px;background:#1A4A6A">
+              <div class="spine-top-band"></div><div class="spine-bot-band"></div>
+            </div>
+          </div>
+          <div class="shelf-plank">
+            <div class="plank-highlight"></div>
+            <div class="plank-face"></div>
+            <div class="plank-edge"></div>
+            <div class="plank-shadow"></div>
+          </div>
+        </div>
+
+        <!-- Shelf 2 (empty) -->
+        <div class="shelf-row">
+          <div class="books-row"></div>
+          <div class="shelf-plank">
+            <div class="plank-highlight"></div>
+            <div class="plank-face"></div>
+            <div class="plank-edge"></div>
+            <div class="plank-shadow"></div>
+          </div>
+        </div>
+
+        <!-- Shelf 3 (empty) -->
+        <div class="shelf-row">
+          <div class="books-row"></div>
+          <div class="shelf-plank">
+            <div class="plank-highlight"></div>
+            <div class="plank-face"></div>
+            <div class="plank-edge"></div>
+            <div class="plank-shadow"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════
+     SCREEN 2 — BOOK DETAIL
+═══════════════════════════════ -->
+<div>
+  <p class="screen-label">Screen 2 — Book Review  <span style="color:#C8923A;font-size:10px">(tap a book spine above to switch)</span></p>
+  <div class="phone" id="detail-phone">
+    <div class="screen detail-screen" id="detail-screen">
+
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● WiFi 🔋</span>
+      </div>
+
+      <div class="detail-topbar">
+        <div class="detail-back">← Back to Shelf</div>
+        <div class="edit-btn">Edit</div>
+      </div>
+
+      <!-- Dynamic content -->
+      <div id="detail-content"></div>
+      <div class="bottom-space"></div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const books = [
+  {
+    title: "Schindler's List",
+    author: "Thomas Keneally",
+    genre: "Historical Fiction",
+    pages: 432,
+    dateRead: "November 15, 2024",
+    rating: 5,
+    favorite: true,
+    cover: "https://covers.openlibrary.org/b/id/15089745-M.jpg",
+    review: "Devastating and essential. Changed how I think about moral courage.",
+    placeholderColor: null,
+    placeholderLetter: "S",
+  },
+  {
+    title: "Tap In",
+    author: "Mel Robbins",
+    genre: "Self-Help",
+    pages: 256,
+    dateRead: "January 3, 2025",
+    rating: 4,
+    favorite: false,
+    cover: null,
+    review: "Practical and motivating. The mindset shifts stuck with me.",
+    placeholderColor: "#1B3D72",
+    placeholderLetter: "T",
+  },
+  {
+    title: "Razorblade Tears",
+    author: "S.A. Cosby",
+    genre: "Crime Thriller",
+    pages: 336,
+    dateRead: "February 20, 2025",
+    rating: 5,
+    favorite: true,
+    cover: "https://covers.openlibrary.org/b/id/10480276-M.jpg",
+    review: "Brutal, fast-paced, and emotionally complex. Cosby is exceptional.",
+    placeholderColor: null,
+    placeholderLetter: "R",
+  },
+];
+
+function stars(n) {
+  return '★'.repeat(n) + '☆'.repeat(5 - n);
+}
+
+function showDetail(idx) {
+  const b = books[idx];
+  const coverHtml = b.cover
+    ? `<img class="cover-img" src="${b.cover}" alt="${b.title}" />`
+    : `<div class="cover-placeholder" style="background:${b.placeholderColor}">${b.placeholderLetter}</div>`;
+
+  const favChip = b.favorite ? `<span class="chip accent">♥ Favourite</span>` : '';
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="cover-section">
+      ${coverHtml}
+      <div class="detail-title">${b.title}</div>
+      <div class="detail-author">by ${b.author}</div>
+      <div class="stars">${stars(b.rating)}</div>
+    </div>
+
+    <div class="review-card">
+      <div class="meta-row">
+        <span class="chip">${b.genre}</span>
+        <span class="chip">${b.pages} pages</span>
+        ${favChip}
+      </div>
+      <div class="card-divider"></div>
+      <div class="date-line">Finished: ${b.dateRead}</div>
+      <div class="review-box">
+        <div class="review-box-label">My Review</div>
+        <div class="review-box-text">${b.review}</div>
+      </div>
+    </div>
+  `;
+
+  // Scroll detail phone into view
+  document.getElementById('detail-phone').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Load first book by default
+showDetail(0);
+</script>
+
+</body>
+</html>
